@@ -1,0 +1,42 @@
+@import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+
+:root {
+  --dark-blue: #001524;
+  --blue: #15616D;
+  --cream: #FFECD1;
+  --orange: #FF7D00;
+  --brown: #78290F;
+  --white: #FEFEFE;
+  --black: #121212;
+}
+
+* {
+  color: var(--black);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* .container {
+  display: flex;
+  flex-wrap: wrap;
+} */
+
+h1 {
+  flex-basis: 100%;
+}
+
+.basic-button {
+  fill: var(--cream);
+  border-width: 2px;
+  border-radius: 0;
+  border-color: var(--black);
+}
+
+
+

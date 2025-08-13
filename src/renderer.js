@@ -9,15 +9,26 @@ function createFileTableEntry(file) {
 }
 
 document.addEventListener('DOMContentLoaded',async () => {
-    // Load files after click
-    document.getElementById('id-btn-load-folder').addEventListener('click',async () => {
+
+    const files = window.sessionStorage.getItem('files');
+    if (files) {
         const fileTable = document.getElementById('id-files-table').querySelector('tbody');
-        fileTable.children = fileTable.children[0];
-        const files = await window.electronAPI.getFiles();
-        for (file of files) {
+        for (file of JSON.parse(files)) {
             const newRow = createFileTableEntry(file);
             fileTable.insertAdjacentHTML('beforeend',newRow);
-            // header = await extractMDFileInfo(file.handle);
+        }
+    }
+
+    document.getElementById('id-btn-load-folder').addEventListener('click',async () => {
+        const fileTable = document.getElementById('id-files-table').querySelector('tbody');
+        const files = await window.electronAPI.getFiles();
+        if (files) {
+            fileTable.innerHTML = '';
+            window.sessionStorage.setItem('files',JSON.stringify(files));
+            for (file of files) {
+                const newRow = createFileTableEntry(file);
+                fileTable.insertAdjacentHTML('beforeend',newRow);
+            }
         }
     });
 });

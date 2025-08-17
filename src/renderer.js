@@ -16,7 +16,7 @@ function createFileTableEntry(file) {
 }
 
 function loadJSONEntry(property) {
-    let files = window.sessionStorage.getItem(property);
+    let files = window.localStorage.getItem(property);
     if (files) {
         files = JSON.parse(files);
         files.forEach(element => {
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded',async () => {
         const files = await window.electronAPI.getFiles();
         if (files) {
             fileTable.innerHTML = '';
-            window.sessionStorage.setItem('files',JSON.stringify(files));
+            window.localStorage.setItem('files',JSON.stringify(files));
             insertTableRows(files,fileTable,fileModal);
         }
     });

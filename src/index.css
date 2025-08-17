@@ -38,5 +38,35 @@ h1 {
   border-color: var(--black);
 }
 
+#id-files-table tr {
+  cursor: pointer;
+}
 
+table.sortable th {
+  position: relative;
+}
 
+table.sortable th[data-sort="1"]::after {
+  content: '↓';
+  color: var(--white);
+  position: absolute;
+  right: 4px;
+}
+
+table.sortable th[data-sort="-1"]::after {
+  content: '↑';
+  color: var(--white);
+  position: absolute;
+  right: 4px;
+}
+
+.modal-footer {
+  justify-content: flex-start !important;
+}
+
+/* table.sortable th[data-sort="0"]:hover::after {
+  content: '↓';
+  color: var(--orange);
+  position: absolute;
+  right: 4px;
+} */

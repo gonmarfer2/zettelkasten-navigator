@@ -46,11 +46,11 @@ async function getAllFilesRecurrent(path) {
 //     return res;
 // }
 
-async function extractMDFileInfo(rawFile) {
+async function extractMDFileInfo(rawFile,index) {
     const fileContent = await fs.readFile(rawFile.path,{encoding:'utf-8'});
     const fileContents = fileContent.split('---');
     const header = yaml.load(fileContents[1].trim());
-    const res = {...rawFile, ...header};
+    const res = {index,...rawFile, ...header, body:fileContents[2]};
     return res;
 }
 

@@ -1,16 +1,17 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('node:path');
 const navigation = require('./navigation');
-// const bootstrap = require('bootstrap');
 
 async function handleGetFiles () {
   const { canceled, filePaths } = await dialog.showOpenDialog({properties:['openDirectory']});
   if (!canceled) {
     let res = [];
     const files = await navigation.getAllFilesRecurrent(filePaths[0]);
+    let i = 0;
     for (const file of files) {
-      const fileInfo = await navigation.extractMDFileInfo(file);
+      const fileInfo = await navigation.extractMDFileInfo(file,i);
       res.push(fileInfo);
+      i++;
     }
     return res;
   }

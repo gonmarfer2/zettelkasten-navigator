@@ -9,20 +9,39 @@
     <div class="container-fluid">
       <h1>📝 My Digital Zettelkasten</h1>
       <button id="id-btn-load-folder" class="btn btn-primary">Load Folder</button>
-      <table id="id-files-table" class="table table-hover">
+      <table id="id-files-table" class="table table-hover sortable">
         <thead>
           <tr class="table-dark">
-              <th>Title</th>
-              <th>Tags</th>
-              <th>Date</th>
-              <th>Filename</th>
+              <th data-sort="1" data-name="title">Title</th>
+              <th data-sort="1" data-name="tags">Tags</th>
+              <th data-sort="1" data-name="date">Date</th>
+              <th data-sort="1" data-name="name">Filename</th>
           </tr>
         </thead>
         <tbody>
 
         </tbody>
       </table>
+
+      <div id="id-file-modal" class="modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 id="id-file-modal-title" class="modal-title"></h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="id-file-modal-body" class="modal-body"></div>
+            <div id="id-file-modal-footer" class="modal-footer">
+              <h6 style="width: 100%;">Files that reference this:</h6>
+              <ul></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </body>
+  <script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../node_modules/showdown/dist/showdown.min.js"></script>
   <script src="renderer.js"></script>
 </html>

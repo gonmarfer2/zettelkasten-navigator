@@ -6,7 +6,7 @@ I'm building this application to easily search for my zettlekasten documents whe
 
 - [x] List documents
 - [x] Open documents
-- [ ] Filter documents by title, tag, date or words contained
+- [x] Filter documents by title, tag, date or words contained
 
 ## Tasks
 

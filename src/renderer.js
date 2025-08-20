@@ -85,6 +85,8 @@ function loadModalData(modal,files,fileId) {
 }
 
 function insertTableRows(files,fileTable,fileModal) {
+    fileTable.innerHTML = '';
+
     for (const file of files) {
         const newRow = createFileTableEntry(file);
         fileTable.insertAdjacentHTML('beforeend',newRow);
@@ -102,6 +104,8 @@ function insertTableRows(files,fileTable,fileModal) {
 
 document.addEventListener('DOMContentLoaded',async () => {
 
+    const fileTable = document.getElementById('id-files-table').querySelector('tbody');
+
     var fileModal = new bootstrap.Modal(document.getElementById('id-file-modal'), {
         backdrop: true,
         keyboard: false
@@ -110,16 +114,13 @@ document.addEventListener('DOMContentLoaded',async () => {
     // Session storage files
     const files = loadJSONEntry(FILES_PROPERTY);
     if (files) {
-        const fileTable = document.getElementById('id-files-table').querySelector('tbody');
         insertTableRows(files,fileTable,fileModal);
     }
 
     // Load button
     document.getElementById('id-btn-load-folder').addEventListener('click',async () => {
-        const fileTable = document.getElementById('id-files-table').querySelector('tbody');
         const files = await window.electronAPI.getFiles();
         if (files) {
-            fileTable.innerHTML = '';
             window.localStorage.setItem('files',JSON.stringify(files));
             insertTableRows(files,fileTable,fileModal);
         }
@@ -134,12 +135,42 @@ document.addEventListener('DOMContentLoaded',async () => {
             th.dataset.sort = -1 * sortOrder;
             const files = loadJSONEntry(FILES_PROPERTY);
             if (files) {
-                const fileTable = document.getElementById('id-files-table').querySelector('tbody');
                 files.sort(propertyComparator(sortOrder,sortProp));
-                fileTable.innerHTML = '';
                 insertTableRows(files,fileTable,fileModal);
             }
         });
+    });
+
+    document.getElementById('id-search-form').querySelectorAll('input').forEach(inputForm => {
+        let eventType = 'keyup';
+        if (inputForm.type === 'date') {
+            eventType = 'change'
+        }
+
+        inputForm.addEventListener(eventType,(event) => {
+            const formInputs = document.getElementById('id-search-form').querySelectorAll('input');
+            let filterFiles = files.slice();
+            formInputs.forEach(element => {
+                if (element.value != "") {
+                    if (element.type === 'date') {
+                        const searchDate = element.valueAsDate;
+                        filterFiles = filterFiles.filter((f) => searchDate.getTime() == f.date.getTime());
+                    } else {
+                        const searchRegex = new RegExp(RegExp.escape(element.value),"giu");
+                        filterFiles = filterFiles.filter((f) => searchRegex.test(f[element.dataset.name]));
+                    }
+                }
+            });
+            insertTableRows(filterFiles,fileTable,fileModal);
+        });
+    });
+
+    document.getElementById('id-form-reset').addEventListener('click',(event) => {
+        const formInputs = document.getElementById('id-search-form').querySelectorAll('input');
+        formInputs.forEach(element => {
+            element.value = "";
+        });
+        insertTableRows(files,fileTable,fileModal);
     });
 
 });

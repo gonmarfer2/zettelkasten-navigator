@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('node:path');
 const navigation = require('./navigation');
 
@@ -7,6 +7,7 @@ async function handleGetFiles () {
   if (!canceled) {
     let res = [];
     const files = await navigation.getAllFilesRecurrent(filePaths[0]);
+    console.log(files);
     let i = 0;
     for (const file of files) {
       const fileInfo = await navigation.extractMDFileInfo(file,i);
@@ -32,11 +33,17 @@ const createWindow = () => {
     },
   });
 
+
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
 };
 
 // This method will be called when Electron has finished

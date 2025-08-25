@@ -21,7 +21,11 @@ async function getAllFilesRecurrent(path) {
     const files = [];
     const filepaths = await fs.readdir(path);
     for (const file of filepaths) {
-        const subpath = path + '\\' + file;
+        const hasSlash = /\\/.test(path);
+        let subpath = path + '/' + file;
+        if (hasSlash) {
+            subpath = path + '\\' + file;
+        }
         const fileType = await fs.lstat(subpath);
         if (fileType.isDirectory()) {
             files.push(...await getAllFilesRecurrent(subpath));

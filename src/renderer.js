@@ -58,7 +58,13 @@ function changeFileLinksWithPageLinks(modal,files) {
                 element.dataset.index = file[0].index;
                 element.href = '#';
                 element.addEventListener('click',() => loadModalData(modal,files,file[0].index))
+            } else {
+                const simpleText = document.createElement('span');
+                simpleText.innerHTML = element.innerHTML;
+                element.replaceWith(simpleText);
             }
+        } else {
+            element.target = "_blank";
         }
     });
 }
@@ -84,7 +90,7 @@ function loadModalData(modal,files,fileId) {
     });
 }
 
-function insertTableRows(files,fileTable,fileModal) {
+function insertTableRows(files,fileTable,fileModal,informationBox) {
     fileTable.innerHTML = '';
 
     for (const file of files) {
@@ -100,6 +106,13 @@ function insertTableRows(files,fileTable,fileModal) {
             fileModal.show();
         });
     });
+
+    if (informationBox) {
+        const message = `<div class="alert alert-success d-flex gap-2" role="alert"><i class="bi bi-check-circle-fill"></i>
+      <span class="flex-grow-1">The table has been reloaded.</span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`
+        informationBox.insertAdjacentHTML('beforeend',message);
+    }
 }
 
 document.addEventListener('DOMContentLoaded',async () => {
@@ -110,6 +123,8 @@ document.addEventListener('DOMContentLoaded',async () => {
         backdrop: true,
         keyboard: false
     })
+
+    const informationBox = document.getElementById('id-information-window');
 
     // Session storage files
     const files = loadJSONEntry(FILES_PROPERTY);
@@ -122,7 +137,7 @@ document.addEventListener('DOMContentLoaded',async () => {
         const files = await window.electronAPI.getFiles();
         if (files) {
             window.localStorage.setItem('files',JSON.stringify(files));
-            insertTableRows(files,fileTable,fileModal);
+            insertTableRows(files,fileTable,fileModal,informationBox);
         }
     });
 
@@ -141,6 +156,7 @@ document.addEventListener('DOMContentLoaded',async () => {
         });
     });
 
+    // Filtering
     document.getElementById('id-search-form').querySelectorAll('input').forEach(inputForm => {
         let eventType = 'keyup';
         if (inputForm.type === 'date') {
@@ -165,6 +181,7 @@ document.addEventListener('DOMContentLoaded',async () => {
         });
     });
 
+    // Reset filters
     document.getElementById('id-form-reset').addEventListener('click',(event) => {
         const formInputs = document.getElementById('id-search-form').querySelectorAll('input');
         formInputs.forEach(element => {

@@ -7,7 +7,7 @@ async function handleGetFiles () {
   if (!canceled) {
     let res = [];
     const files = await navigation.getAllFilesRecurrent(filePaths[0]);
-    console.log(files);
+    // console.log(files);
     let i = 0;
     for (const file of files) {
       const fileInfo = await navigation.extractMDFileInfo(file,i);

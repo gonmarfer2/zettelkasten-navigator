@@ -117,6 +117,7 @@ function insertTableRows(files,fileTable,fileModal,informationBox) {
 
 document.addEventListener('DOMContentLoaded',async () => {
 
+    let currentFiles = [];
     const fileTable = document.getElementById('id-files-table').querySelector('tbody');
 
     var fileModal = new bootstrap.Modal(document.getElementById('id-file-modal'), {
@@ -129,7 +130,8 @@ document.addEventListener('DOMContentLoaded',async () => {
     // Session storage files
     const files = loadJSONEntry(FILES_PROPERTY);
     if (files) {
-        insertTableRows(files,fileTable,fileModal);
+        currentFiles = files;
+        insertTableRows(currentFiles,fileTable,fileModal);
     }
 
     // Load button
@@ -137,7 +139,8 @@ document.addEventListener('DOMContentLoaded',async () => {
         const files = await window.electronAPI.getFiles();
         if (files) {
             window.localStorage.setItem('files',JSON.stringify(files));
-            insertTableRows(files,fileTable,fileModal,informationBox);
+            currentFiles = files;
+            insertTableRows(currentFiles,fileTable,fileModal,informationBox);
         }
     });
 
@@ -148,11 +151,13 @@ document.addEventListener('DOMContentLoaded',async () => {
             const sortOrder = th.dataset.sort;
             const sortProp = th.dataset.name;
             th.dataset.sort = -1 * sortOrder;
-            const files = loadJSONEntry(FILES_PROPERTY);
-            if (files) {
-                files.sort(propertyComparator(sortOrder,sortProp));
-                insertTableRows(files,fileTable,fileModal);
-            }
+            // const files = loadJSONEntry(FILES_PROPERTY);
+            // if (files) {
+            //     files.sort(propertyComparator(sortOrder,sortProp));
+            //     insertTableRows(files,fileTable,fileModal);
+            // }
+            currentFiles.sort(propertyComparator(sortOrder,sortProp));
+            insertTableRows(currentFiles,fileTable,fileModal);
         });
     });
 
@@ -177,6 +182,7 @@ document.addEventListener('DOMContentLoaded',async () => {
                     }
                 }
             });
+            currentFiles = filterFiles;
             insertTableRows(filterFiles,fileTable,fileModal);
         });
     });
@@ -187,7 +193,8 @@ document.addEventListener('DOMContentLoaded',async () => {
         formInputs.forEach(element => {
             element.value = "";
         });
-        insertTableRows(files,fileTable,fileModal);
+        currentFiles = files;
+        insertTableRows(currentFiles,fileTable,fileModal);
     });
 
 });

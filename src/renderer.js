@@ -6,11 +6,14 @@ function createFileTableEntry(file) {
         tagsHTML += `<span class="badge rounded-pill bg-primary">${tag}</span>`;
     });
 
+    const actionButtons = `<button class="btn btn-primary" data-action="view"><i class="bi bi-eye-fill text-light"></i></button>`;
+
     const entry = `<tr data-index="${file.index}">
-    <td>${file.title}</td>
-    <td>${tagsHTML}</td>
-    <td>${file.date.toLocaleDateString()}</td>
-    <td>${file.name}</td>
+    <td class="align-middle">${actionButtons}</td>
+    <td class="align-middle">${file.title}</td>
+    <td class="align-middle">${tagsHTML}</td>
+    <td class="align-middle">${file.date.toLocaleDateString()}</td>
+    <td class="align-middle">${file.name}</td>
     </tr>`;
     return entry;
 }
@@ -90,6 +93,17 @@ function loadModalData(modal,files,fileId) {
     });
 }
 
+function showMessage(message,type,box) {
+    const VALID_TYPES = ['info','success','error']
+    if (VALID_TYPES.includes(type)) {
+        const messageBox = `<div class="alert alert-${type} d-flex gap-2" role="alert"><i class="bi bi-check-circle-fill"></i>
+          <span class="flex-grow-1">${message}</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`
+        box.insertAdjacentHTML('beforeend',messageBox);
+    }
+
+}
+
 function insertTableRows(files,fileTable,fileModal,informationBox) {
     fileTable.innerHTML = '';
 
@@ -99,19 +113,16 @@ function insertTableRows(files,fileTable,fileModal,informationBox) {
     }
     
     // Open file data
-    fileTable.querySelectorAll('tr').forEach(element => {
+    fileTable.querySelectorAll('[data-action="view"]').forEach(element => {
         element.addEventListener('click', (e) => {
-            const rowId = e.target.parentElement.dataset.index;
+            const rowId = e.target.closest('tr').dataset.index;
             loadModalData(fileModal,files,rowId);
             fileModal.show();
         });
     });
 
     if (informationBox) {
-        const message = `<div class="alert alert-success d-flex gap-2" role="alert"><i class="bi bi-check-circle-fill"></i>
-      <span class="flex-grow-1">The table has been reloaded.</span>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`
-        informationBox.insertAdjacentHTML('beforeend',message);
+        showMessage('The table has been reloaded.','success',informationBox);
     }
 }
 

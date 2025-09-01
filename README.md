@@ -22,3 +22,7 @@ I'm building this application to easily search for my zettlekasten documents whe
 - [x] Open external links in the browser
 - [ ] Add a buton to see the graph of related documents
 - [x] Instead of clicking the row, put a button to access the document view.
+
+## Bugs
+
+- [ ] The graph is not rendered unless the window is resized.

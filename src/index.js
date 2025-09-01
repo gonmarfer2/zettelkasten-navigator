@@ -1,22 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('node:path');
 const navigation = require('./navigation');
-
-async function handleGetFiles () {
-  const { canceled, filePaths } = await dialog.showOpenDialog({properties:['openDirectory']});
-  if (!canceled) {
-    let res = [];
-    const files = await navigation.getAllFilesRecurrent(filePaths[0]);
-    // console.log(files);
-    let i = 0;
-    for (const file of files) {
-      const fileInfo = await navigation.extractMDFileInfo(file,i);
-      res.push(fileInfo);
-      i++;
-    }
-    return res;
-  }
-}
+const graphs = require('./graphs');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -50,7 +35,20 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  ipcMain.handle('dialog:getFiles', handleGetFiles);
+  ipcMain.handle('dialog:getFiles', async (event) => {
+    return await navigation.getFiles();
+  });
+  ipcMain.handle('dialog:importGraph', (event, graphJson) => {
+    return graphs.importGraph(graphJson);
+  });
+  ipcMain.handle('dialog:exportGraph', (event, graphJson) => {
+    const graph = graphs.importGraph(graphJson);
+    return graphs.exportGraph(graph);
+  });
+  ipcMain.handle('dialog:getPartialGraph', (event, files, fileId) => {
+    const graph = graphs.getPartialGraph(files,fileId);
+    return graphs.exportGraph(graph);
+  });
   createWindow();
 
   // On OS X it's common to re-create a window in the app when the

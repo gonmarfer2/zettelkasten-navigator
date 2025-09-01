@@ -21,8 +21,15 @@
     "bootstrap": "^5.3.7",
     "bootstrap-icons": "^1.13.1",
     "electron-squirrel-startup": "^1.0.1",
+    "graphology": "^0.26.0",
+    "graphology-components": "^1.5.4",
+    "graphology-layout-forceatlas2": "^0.10.1",
+    "graphology-layout-noverlap": "^0.4.2",
+    "graphology-operators": "^1.6.1",
+    "graphology-traversal": "^0.3.1",
     "js-yaml": "^4.1.0",
-    "showdown": "^2.1.0"
+    "showdown": "^2.1.0",
+    "sigma": "^3.0.2"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.8.3",

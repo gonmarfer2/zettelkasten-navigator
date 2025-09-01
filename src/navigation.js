@@ -1,21 +1,22 @@
 import fs from 'fs/promises';
 import yaml from 'js-yaml';
+import { dialog } from 'electron';
 
-// async function getAllFilesRecurrent(directoryHandler) {
-//     // Recurrent reading
-//     const files = [];
-//     for await (const [name, handle] of directoryHandler.entries()) {
-//         if (handle.kind === 'file') {
-//             const extension = name.split('.').pop();
-//             if (extension === 'md') {
-//                 files.push({name,handle});
-//             }
-//         } else if (handle.kind === 'directory') {
-//             files.push(...await getAllFilesRecurrent(handle));
-//         }
-//     }
-//     return files;
-// }
+async function getFiles() {
+    const { canceled, filePaths } = await dialog.showOpenDialog({properties:['openDirectory']});
+    if (!canceled) {
+      let res = [];
+      const files = await getAllFilesRecurrent(filePaths[0]);
+      // console.log(files);
+      let i = 0;
+      for (const file of files) {
+        const fileInfo = await extractMDFileInfo(file,i);
+        res.push(fileInfo);
+        i++;
+      }
+      return res;
+    }
+  }
 
 async function getAllFilesRecurrent(path) {
     const files = [];
@@ -39,23 +40,20 @@ async function getAllFilesRecurrent(path) {
     return files;
 }
 
-// async function extractMDFileInfo(handle) {
-//     res = {}
-//     f = await handle.getFile();
-//     fileContent = await f.text();
-//     fileContents = fileContent.split('---');
-//     console.log(fileContents);
-//     header = yaml.load(fileContents[1].trim());
-//     console.log(header);
-//     return res;
-// }
-
 async function extractMDFileInfo(rawFile,index) {
     const fileContent = await fs.readFile(rawFile.path,{encoding:'utf-8'});
     const fileContents = fileContent.split('---');
     const header = yaml.load(fileContents[1].trim());
-    const res = {index,...rawFile, ...header, body:fileContents[2]};
+    const bodyText = fileContents[2];
+    const linkRegex = new RegExp("\.\.?\\.*\.md|\.\.?\/.*\.md","g");
+    const documentLinksSearch = bodyText.matchAll(linkRegex);
+    const documentLinks = [];
+    Array.from(documentLinksSearch).forEach(link => {
+        const fileName = link[0].split(/\/|\\/g);
+        documentLinks.push(fileName[fileName.length - 1]);
+    });
+    const res = {index,...rawFile, ...header, body:bodyText, links:documentLinks};
     return res;
 }
 
-export {getAllFilesRecurrent, extractMDFileInfo};
+export {getFiles};

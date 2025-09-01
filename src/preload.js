@@ -5,4 +5,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getFiles: () => ipcRenderer.invoke('dialog:getFiles'),
+  exportGraph: (graphJson) => ipcRenderer.invoke('dialog:exportGraph',graphJson),
+  importGraph: (graphJson) => ipcRenderer.invoke('dialog:importGraph',graphJson),
+  getPartialGraph: (files, fileId) => ipcRenderer.invoke('dialog:getPartialGraph',files,fileId)
 });

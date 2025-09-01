@@ -1,4 +1,5 @@
 const FILES_PROPERTY = 'files';
+const GRAPH_PROPERTY = 'graph';
 
 function createFileTableEntry(file) {
     let tagsHTML = '';
@@ -6,7 +7,8 @@ function createFileTableEntry(file) {
         tagsHTML += `<span class="badge rounded-pill bg-primary">${tag}</span>`;
     });
 
-    const actionButtons = `<button class="btn btn-primary" data-action="view"><i class="bi bi-eye-fill text-light"></i></button>`;
+    const actionButtons = `<button class="btn btn-primary" data-action="view"><i class="bi bi-eye-fill text-light"></i></button>
+    <button class="btn btn-primary" data-action="graph"><i class="bi bi-share-fill text-light"></i></button>`;
 
     const entry = `<tr data-index="${file.index}">
     <td class="align-middle">${actionButtons}</td>
@@ -19,15 +21,18 @@ function createFileTableEntry(file) {
 }
 
 function loadJSONEntry(property) {
-    let files = window.localStorage.getItem(property);
-    if (files) {
-        files = JSON.parse(files);
-        files.forEach(element => {
-            element.date = new Date(element.date);
-        });
+    let entry = window.localStorage.getItem(property);
+    if (entry) {
+        if (property == FILES_PROPERTY) {
+            entry = JSON.parse(entry);
+            entry.forEach(element => {
+                element.date = new Date(element.date);
+            });
+        }
     }
-    return files;
+    return entry;
 }
+
 
 function propertyComparator(order,property) {
     return function (a,b) {
@@ -93,6 +98,25 @@ function loadModalData(modal,files,fileId) {
     });
 }
 
+async function loadModalGraph(modal,files,fileId) {
+    const thisFile = files.filter((f) => f.index == fileId)[0];
+    
+    modal._element.querySelector('.modal-title').innerHTML = thisFile.title;
+    const modalBody = modal._element.querySelector('.modal-body');
+    modalBody.innerHTML = '';
+    modalBody.insertAdjacentHTML('beforeend','<div class="graph-container"></div>');
+
+    const partialGraph = await window.electronAPI.getPartialGraph(files,fileId);
+    const graph = new graphology.Graph();
+    graph.import(partialGraph);
+    const graphRenderer = new Sigma(graph,modalBody.querySelector('.graph-container'),{allowInvalidContainer:true});
+    graphRenderer.refresh();
+    console.log(graphRenderer);
+
+    let footerList = modal._element.querySelector('.modal-footer ul');
+    footerList.innerHTML = '';
+}
+
 function showMessage(message,type,box) {
     const VALID_TYPES = ['info','success','error']
     if (VALID_TYPES.includes(type)) {
@@ -121,6 +145,14 @@ function insertTableRows(files,fileTable,fileModal,informationBox) {
         });
     });
 
+    fileTable.querySelectorAll('[data-action="graph"]').forEach(element => {
+        element.addEventListener('click', async (e) => {
+            const rowId = e.target.closest('tr').dataset.index;
+            await loadModalGraph(fileModal,files,rowId);
+            fileModal.show();
+        });
+    });
+
     if (informationBox) {
         showMessage('The table has been reloaded.','success',informationBox);
     }
@@ -140,6 +172,7 @@ document.addEventListener('DOMContentLoaded',async () => {
 
     // Session storage files
     const files = loadJSONEntry(FILES_PROPERTY);
+    console.log(files);
     if (files) {
         currentFiles = files;
         insertTableRows(currentFiles,fileTable,fileModal);
@@ -148,8 +181,14 @@ document.addEventListener('DOMContentLoaded',async () => {
     // Load button
     document.getElementById('id-btn-load-folder').addEventListener('click',async () => {
         const files = await window.electronAPI.getFiles();
+        // let graph = filesAndGraph[1];
         if (files) {
+            // graph = await window.electronAPI.exportGraph(graph);
+            // const g = new graphology.Graph();
+            // g.import(graph);
+            // const s = new Sigma(g,document.getElementById('id-information-window'));
             window.localStorage.setItem('files',JSON.stringify(files));
+            // window.localStorage.setItem('graph',graph);
             currentFiles = files;
             insertTableRows(currentFiles,fileTable,fileModal,informationBox);
         }

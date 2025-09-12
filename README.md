@@ -20,9 +20,10 @@ I'm building this application to easily search for my zettlekasten documents whe
   - (node:19341) electron: Failed to load URL: file:///home/gonzalo/Proyectos/2025/zettelkasten-navigator/src/tecincas-para-docentes-preparar-una-clase-universitaria.md with error: ERR_FILE_NOT_FOUND
 - [ ] Show errors when the loading button fails (and where it fails, all the document names)
 - [x] Open external links in the browser
-- [ ] Add a buton to see the graph of related documents
+- [x] Add a buton to see the graph of related documents
 - [x] Instead of clicking the row, put a button to access the document view.
+- [ ] Make the graph show documents AND tags.
 
 ## Bugs
 
-- [ ] The graph is not rendered unless the window is resized.
+- [x] The graph is not rendered unless the window is resized.

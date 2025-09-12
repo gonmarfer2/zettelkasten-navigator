@@ -2,7 +2,7 @@ import graphology from 'graphology';
 import noverlap from 'graphology-layout-noverlap';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
 import { forEachConnectedComponent } from 'graphology-components';
-import { subgraph } from 'graphology-operators';
+import { subgraph, toUndirected } from 'graphology-operators';
 
 function createGraph(files) {
     const graph = new graphology.Graph();
@@ -53,7 +53,7 @@ function createGraph(files) {
             i += 1;
         });
         const nodeColor = '#' + nodeColorArray.map((c) => c.toString(16).padStart(2,'0')).join('');
-        graph.addNode(file.name,{x:nodeX,y:nodeY,label:nodeLabel,size:10,color:nodeColor});
+        graph.addNode(file.name,{x:nodeX,y:nodeY,label:nodeLabel,size:15,color:nodeColor});
         nodes.push(file.name);
     }
     // Create edges
@@ -81,7 +81,7 @@ function getPartialGraph(files,fileId) {
         }
     });
     forceAtlas2.assign(partialGraph,{iterations:150});
-    // noverlap.assign(partialGraph,{iterations:150});
+    noverlap.assign(partialGraph,{iterations:150});
     return partialGraph;
 }
 

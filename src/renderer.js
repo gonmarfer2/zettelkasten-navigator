@@ -130,7 +130,7 @@ function showMessage(message,type,box) {
 
 }
 
-function insertTableRows(files,fileTable,fileModal,informationBox) {
+function insertTableRows(files,allFiles,fileTable,fileModal,informationBox) {
     fileTable.innerHTML = '';
 
     for (const file of files) {
@@ -150,7 +150,7 @@ function insertTableRows(files,fileTable,fileModal,informationBox) {
     fileTable.querySelectorAll('[data-action="graph"]').forEach(element => {
         element.addEventListener('click', async (e) => {
             const rowId = e.target.closest('tr').dataset.index;
-            const graphRenderer = await loadModalGraph(fileModal,files,rowId);
+            const graphRenderer = await loadModalGraph(fileModal,allFiles,rowId);
             fileModal.show();
             graphRenderer.refresh();
         });
@@ -175,10 +175,9 @@ document.addEventListener('DOMContentLoaded',async () => {
 
     // Session storage files
     let files = loadJSONEntry(FILES_PROPERTY);
-    console.log(files);
     if (files) {
-        currentFiles = files;
-        insertTableRows(currentFiles,fileTable,fileModal);
+        currentFiles = files.slice();
+        insertTableRows(currentFiles,files,fileTable,fileModal);
     }
 
     // Load button
@@ -192,8 +191,8 @@ document.addEventListener('DOMContentLoaded',async () => {
             // const s = new Sigma(g,document.getElementById('id-information-window'));
             window.localStorage.setItem('files',JSON.stringify(files));
             // window.localStorage.setItem('graph',graph);
-            currentFiles = files;
-            insertTableRows(currentFiles,fileTable,fileModal,informationBox);
+            currentFiles = files.slice();
+            insertTableRows(currentFiles,files,fileTable,fileModal,informationBox);
         }
     });
 
@@ -210,7 +209,7 @@ document.addEventListener('DOMContentLoaded',async () => {
             //     insertTableRows(files,fileTable,fileModal);
             // }
             currentFiles.sort(propertyComparator(sortOrder,sortProp));
-            insertTableRows(currentFiles,fileTable,fileModal);
+            insertTableRows(currentFiles,files,fileTable,fileModal);
         });
     });
 
@@ -240,8 +239,8 @@ document.addEventListener('DOMContentLoaded',async () => {
                     }
                 }
             });
-            currentFiles = filterFiles;
-            insertTableRows(filterFiles,fileTable,fileModal);
+            currentFiles = filterFiles.slice();
+            insertTableRows(filterFiles,files,fileTable,fileModal);
         });
     });
 
@@ -251,10 +250,8 @@ document.addEventListener('DOMContentLoaded',async () => {
         formInputs.forEach(element => {
             element.value = "";
         });
-        currentFiles = files;
-        insertTableRows(currentFiles,fileTable,fileModal);
+        currentFiles = files.slice();
+        insertTableRows(currentFiles,files,fileTable,fileModal);
     });
-
-    console.log(files);
 
 });

@@ -7,7 +7,7 @@ import { subgraph } from 'graphology-operators';
 function createGraph(files) {
     const graph = new graphology.Graph();
     const nodes = [];
-    const nodesCoords = [];
+    // const nodesCoords = [];
     // Create nodes
     for (const file of files) {
         // let nodeX = 0;
@@ -33,9 +33,27 @@ function createGraph(files) {
         //     nodeX = Math.random();
         //     nodeY = Math.random();
         // }
+        const nodeLabel = file.title;
+        // if (nodeLabel.length > 32) {
+        //     const spaceAmount = Math.floor(nodeLabel.length / 32);
+        //     nodeLabel = nodeLabel.split('');
+        //     for (let i = spaceAmount - 1; i >= 1; i--) {
+        //         nodeLabel.splice(32*i,0,'\n');
+        //     }
+        //     nodeLabel = nodeLabel.join('');
+        // }
+        // console.log(nodeLabel);
         const nodeX = Math.random();
         const nodeY = Math.random();
-        graph.addNode(file.name,{x:nodeX,y:nodeY,label:file.title,size:10});
+        let nodeColorArray = [1,1,1];
+        let i = 0;
+        file.title.split('').forEach((c)=>{
+            nodeColorArray[i%3] += c.charCodeAt(0);
+            nodeColorArray[i%3] = nodeColorArray[i%3] % 256;
+            i += 1;
+        });
+        const nodeColor = '#' + nodeColorArray.map((c) => c.toString(16).padStart(2,'0')).join('');
+        graph.addNode(file.name,{x:nodeX,y:nodeY,label:nodeLabel,size:10,color:nodeColor});
         nodes.push(file.name);
     }
     // Create edges
@@ -63,7 +81,7 @@ function getPartialGraph(files,fileId) {
         }
     });
     forceAtlas2.assign(partialGraph,{iterations:150});
-    noverlap.assign(partialGraph,{iterations:150});
+    // noverlap.assign(partialGraph,{iterations:150});
     return partialGraph;
 }
 

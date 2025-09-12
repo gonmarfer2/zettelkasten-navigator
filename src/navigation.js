@@ -44,7 +44,7 @@ async function extractMDFileInfo(rawFile,index) {
     const fileContent = await fs.readFile(rawFile.path,{encoding:'utf-8'});
     const fileContents = fileContent.split('---');
     const header = yaml.load(fileContents[1].trim());
-    const bodyText = fileContents[2];
+    const bodyText = fileContents.slice(2).join("---");
     const linkRegex = new RegExp("\.\.?\\.*\.md|\.\.?\/.*\.md","g");
     const documentLinksSearch = bodyText.matchAll(linkRegex);
     const documentLinks = [];

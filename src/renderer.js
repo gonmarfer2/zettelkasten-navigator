@@ -1,5 +1,6 @@
 const FILES_PROPERTY = 'files';
 const GRAPH_PROPERTY = 'graph';
+showdown.setFlavor('github');
 
 function createFileTableEntry(file) {
     let tagsHTML = '';
@@ -79,7 +80,7 @@ function changeFileLinksWithPageLinks(modal,files) {
 
 function loadModalData(modal,files,fileId) {
     const thisFile = files.filter((f) => f.index == fileId)[0];
-    const converter = new showdown.Converter();
+    const converter = new showdown.Converter({tables:true});
     const bodyText = converter.makeHtml(thisFile.body);
     
     modal._element.querySelector('.modal-title').innerHTML = thisFile.title;
@@ -88,8 +89,10 @@ function loadModalData(modal,files,fileId) {
     changeFileLinksWithPageLinks(modal,files,modal);
 
     const referencers = getFilesThatReference(files,thisFile);
-    let footerList = modal._element.querySelector('.modal-footer ul');
-    footerList.innerHTML = referencers;
+    let footerList = modal._element.querySelector('.modal-footer');
+    footerList.innerHTML = '';
+    footerList.insertAdjacentHTML('beforeend','<h6 style="width: 100%;">Files that reference this:</h6>');
+    footerList.insertAdjacentHTML('beforeend',`<ul>${referencers}</ul>`);
 
     footerList.querySelectorAll('li > a').forEach(f => {
         f.addEventListener('click', () => {
@@ -110,11 +113,10 @@ async function loadModalGraph(modal,files,fileId) {
     const graph = new graphology.Graph();
     graph.import(partialGraph);
     const graphRenderer = new Sigma(graph,modalBody.querySelector('.graph-container'),{allowInvalidContainer:true});
-    graphRenderer.refresh();
-    console.log(graphRenderer);
 
-    let footerList = modal._element.querySelector('.modal-footer ul');
+    let footerList = modal._element.querySelector('.modal-footer');
     footerList.innerHTML = '';
+    return graphRenderer;
 }
 
 function showMessage(message,type,box) {
@@ -148,8 +150,9 @@ function insertTableRows(files,fileTable,fileModal,informationBox) {
     fileTable.querySelectorAll('[data-action="graph"]').forEach(element => {
         element.addEventListener('click', async (e) => {
             const rowId = e.target.closest('tr').dataset.index;
-            await loadModalGraph(fileModal,files,rowId);
+            const graphRenderer = await loadModalGraph(fileModal,files,rowId);
             fileModal.show();
+            graphRenderer.refresh();
         });
     });
 
@@ -171,7 +174,7 @@ document.addEventListener('DOMContentLoaded',async () => {
     const informationBox = document.getElementById('id-information-window');
 
     // Session storage files
-    const files = loadJSONEntry(FILES_PROPERTY);
+    let files = loadJSONEntry(FILES_PROPERTY);
     console.log(files);
     if (files) {
         currentFiles = files;
@@ -180,7 +183,7 @@ document.addEventListener('DOMContentLoaded',async () => {
 
     // Load button
     document.getElementById('id-btn-load-folder').addEventListener('click',async () => {
-        const files = await window.electronAPI.getFiles();
+        files = await window.electronAPI.getFiles();
         // let graph = filesAndGraph[1];
         if (files) {
             // graph = await window.electronAPI.exportGraph(graph);
@@ -219,6 +222,7 @@ document.addEventListener('DOMContentLoaded',async () => {
         }
 
         inputForm.addEventListener(eventType,(event) => {
+            event.preventDefault();
             const formInputs = document.getElementById('id-search-form').querySelectorAll('input');
             let filterFiles = files.slice();
             formInputs.forEach(element => {
@@ -227,8 +231,12 @@ document.addEventListener('DOMContentLoaded',async () => {
                         const searchDate = element.valueAsDate;
                         filterFiles = filterFiles.filter((f) => searchDate.getTime() == f.date.getTime());
                     } else {
-                        const searchRegex = new RegExp(RegExp.escape(element.value),"giu");
-                        filterFiles = filterFiles.filter((f) => searchRegex.test(f[element.dataset.name]));
+                        const searchRegex = new RegExp(RegExp.escape(element.value),"iu");
+                        if(element.dataset.name === 'tags') {
+                            filterFiles = filterFiles.filter((f) => f[element.dataset.name].some((t) => searchRegex.test(t)));
+                        } else {
+                            filterFiles = filterFiles.filter((f) => searchRegex.test(f[element.dataset.name]));
+                        }
                     }
                 }
             });
@@ -246,5 +254,7 @@ document.addEventListener('DOMContentLoaded',async () => {
         currentFiles = files;
         insertTableRows(currentFiles,fileTable,fileModal);
     });
+
+    console.log(files);
 
 });

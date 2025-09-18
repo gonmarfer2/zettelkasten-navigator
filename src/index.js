@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('node:path');
-const navigation = require('./navigation');
+const files = require('./files');
 const graphs = require('./graphs');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -36,7 +36,7 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   ipcMain.handle('dialog:getFiles', async (event) => {
-    return await navigation.getFiles();
+    return await files.getFiles();
   });
   ipcMain.handle('dialog:importGraph', (event, graphJson) => {
     return graphs.importGraph(graphJson);

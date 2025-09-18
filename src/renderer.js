@@ -142,7 +142,7 @@ function insertTableRows(files,allFiles,fileTable,fileModal,informationBox) {
     fileTable.querySelectorAll('[data-action="view"]').forEach(element => {
         element.addEventListener('click', (e) => {
             const rowId = e.target.closest('tr').dataset.index;
-            loadModalData(fileModal,files,rowId);
+            loadModalData(fileModal,allFiles,rowId);
             fileModal.show();
         });
     });

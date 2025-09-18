@@ -60,7 +60,7 @@ function createGraph(files) {
     for (const file of files) {
         for (const link of file.links) {
             if (nodes.includes(link)) {
-                graph.mergeEdge(file.name,link);
+                graph.mergeEdge(file.name,link,{size:5});
             }
         }
     }
@@ -80,8 +80,8 @@ function getPartialGraph(files,fileId) {
             partialGraph = componentGraph;
         }
     });
-    forceAtlas2.assign(partialGraph,{iterations:150});
-    noverlap.assign(partialGraph,{iterations:150});
+    forceAtlas2.assign(partialGraph,{iterations:1000});
+    noverlap.assign(partialGraph,{iterations:500});
     return partialGraph;
 }
 

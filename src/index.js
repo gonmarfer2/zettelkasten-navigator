@@ -49,6 +49,14 @@ app.whenReady().then(() => {
     const graph = graphs.getPartialGraph(files,fileId);
     return graphs.exportGraph(graph);
   });
+  ipcMain.handle('dialog:getPartialGraphLevel1', (event, files, fileId) => {
+    const graph = graphs.getPartialGraphLevel1(files,fileId);
+    return graphs.exportGraph(graph);
+  });
+  ipcMain.handle('dialog:getPartialGraphTags', (event, files, fileId) => {
+    const graph = graphs.getPartialGraphTags(files,fileId);
+    return graphs.exportGraph(graph);
+  });
   createWindow();
 
   // On OS X it's common to re-create a window in the app when the

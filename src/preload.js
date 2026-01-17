@@ -7,5 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getFiles: () => ipcRenderer.invoke('dialog:getFiles'),
   exportGraph: (graphJson) => ipcRenderer.invoke('dialog:exportGraph',graphJson),
   importGraph: (graphJson) => ipcRenderer.invoke('dialog:importGraph',graphJson),
-  getPartialGraph: (files, fileId) => ipcRenderer.invoke('dialog:getPartialGraph',files,fileId)
+  getPartialGraph: (files, fileId) => ipcRenderer.invoke('dialog:getPartialGraph',files,fileId),
+  getPartialGraphLevel1: (files, fileId) => ipcRenderer.invoke('dialog:getPartialGraphLevel1',files,fileId),
+  getPartialGraphTags: (files, fileId) => ipcRenderer.invoke('dialog:getPartialGraphTags',files,fileId)
 });

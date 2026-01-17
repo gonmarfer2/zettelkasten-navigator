@@ -8,8 +8,19 @@ function createFileTableEntry(file) {
         tagsHTML += `<span class="badge rounded-pill bg-primary">${tag}</span>`;
     });
 
-    const actionButtons = `<button class="btn btn-primary" data-action="view"><i class="bi bi-eye-fill text-light"></i></button>
-    <button class="btn btn-primary" data-action="graph"><i class="bi bi-share-fill text-light"></i></button>`;
+    const actionButtons = `<div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle" id="id-actionButtons-${file.index}" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Actions
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="id-actionButtons-${file.index}">
+            <li><a class="dropdown-item" href="#" data-action="view"><i class="bi bi-eye-fill text-dark"></i>&nbsp;View</a></li>
+            <li><a class="dropdown-item" href="#" data-action="graph"><i class="bi bi-share-fill text-dark"></i>&nbsp;Graph connections</a></li>
+            <li><a class="dropdown-item" href="#" data-action="graph-1"><i class="bi bi-share-fill text-dark"></i>&nbsp;Direct connections</a></li>
+            <li><a class="dropdown-item" href="#" data-action="graph-tags"><i class="bi bi-share-fill text-dark"></i>&nbsp;Connections by tags</a></li>
+        </ul>
+        </div>`
+    // const actionButtons = `<button class="btn btn-primary" data-action="view"><i class="bi bi-eye-fill text-light"></i></button>
+    // <button class="btn btn-primary" data-action="graph"><i class="bi bi-share-fill text-light"></i></button>`;
 
     const entry = `<tr data-index="${file.index}">
     <td class="align-middle">${actionButtons}</td>
@@ -33,7 +44,6 @@ function loadJSONEntry(property) {
     }
     return entry;
 }
-
 
 function propertyComparator(order,property) {
     return function (a,b) {
@@ -119,6 +129,42 @@ async function loadModalGraph(modal,files,fileId) {
     return graphRenderer;
 }
 
+async function loadModalGraphLevel1(modal,files,fileId) {
+    const thisFile = files.filter((f) => f.index == fileId)[0];
+    
+    modal._element.querySelector('.modal-title').innerHTML = thisFile.title;
+    const modalBody = modal._element.querySelector('.modal-body');
+    modalBody.innerHTML = '';
+    modalBody.insertAdjacentHTML('beforeend','<div class="graph-container"></div>');
+
+    const partialGraph = await window.electronAPI.getPartialGraphLevel1(files,fileId);
+    const graph = new graphology.Graph();
+    graph.import(partialGraph);
+    const graphRenderer = new Sigma(graph,modalBody.querySelector('.graph-container'),{allowInvalidContainer:true});
+
+    let footerList = modal._element.querySelector('.modal-footer');
+    footerList.innerHTML = '';
+    return graphRenderer;
+}
+
+async function loadModalGraphTags(modal,files,fileId) {
+    const thisFile = files.filter((f) => f.index == fileId)[0];
+    
+    modal._element.querySelector('.modal-title').innerHTML = thisFile.title;
+    const modalBody = modal._element.querySelector('.modal-body');
+    modalBody.innerHTML = '';
+    modalBody.insertAdjacentHTML('beforeend','<div class="graph-container"></div>');
+
+    const partialGraph = await window.electronAPI.getPartialGraphTags(files,fileId);
+    const graph = new graphology.Graph();
+    graph.import(partialGraph);
+    const graphRenderer = new Sigma(graph,modalBody.querySelector('.graph-container'),{allowInvalidContainer:true});
+
+    let footerList = modal._element.querySelector('.modal-footer');
+    footerList.innerHTML = '';
+    return graphRenderer;
+}
+
 function showMessage(message,type,box) {
     const VALID_TYPES = ['info','success','error']
     if (VALID_TYPES.includes(type)) {
@@ -141,6 +187,7 @@ function insertTableRows(files,allFiles,fileTable,fileModal,informationBox) {
     // Open file data
     fileTable.querySelectorAll('[data-action="view"]').forEach(element => {
         element.addEventListener('click', (e) => {
+            e.preventDefault();
             const rowId = e.target.closest('tr').dataset.index;
             loadModalData(fileModal,allFiles,rowId);
             fileModal.show();
@@ -149,8 +196,29 @@ function insertTableRows(files,allFiles,fileTable,fileModal,informationBox) {
 
     fileTable.querySelectorAll('[data-action="graph"]').forEach(element => {
         element.addEventListener('click', async (e) => {
+            e.preventDefault();
             const rowId = e.target.closest('tr').dataset.index;
             const graphRenderer = await loadModalGraph(fileModal,allFiles,rowId);
+            fileModal.show();
+            graphRenderer.refresh();
+        });
+    });
+
+    fileTable.querySelectorAll('[data-action="graph-1"]').forEach(element => {
+        element.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const rowId = e.target.closest('tr').dataset.index;
+            const graphRenderer = await loadModalGraphLevel1(fileModal,allFiles,rowId);
+            fileModal.show();
+            graphRenderer.refresh();
+        });
+    });
+
+    fileTable.querySelectorAll('[data-action="graph-tags"]').forEach(element => {
+        element.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const rowId = e.target.closest('tr').dataset.index;
+            const graphRenderer = await loadModalGraphTags(fileModal,allFiles,rowId);
             fileModal.show();
             graphRenderer.refresh();
         });

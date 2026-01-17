@@ -124,6 +124,13 @@ async function loadModalGraph(modal,files,fileId) {
     graph.import(partialGraph);
     const graphRenderer = new Sigma(graph,modalBody.querySelector('.graph-container'),{allowInvalidContainer:true});
 
+    graphRenderer.on("clickNode", ({node}) => {
+        if (!graph.getNodeAttribute(node, "hidden")) {
+            const thisNodeId = files.filter((f) => f.name == node)[0].index;
+            loadModalData(modal,files,thisNodeId);
+        }
+    });
+
     let footerList = modal._element.querySelector('.modal-footer');
     footerList.innerHTML = '';
     return graphRenderer;
@@ -141,6 +148,13 @@ async function loadModalGraphLevel1(modal,files,fileId) {
     const graph = new graphology.Graph();
     graph.import(partialGraph);
     const graphRenderer = new Sigma(graph,modalBody.querySelector('.graph-container'),{allowInvalidContainer:true});
+
+    graphRenderer.on("clickNode", ({node}) => {
+        if (!graph.getNodeAttribute(node, "hidden")) {
+            const thisNodeId = files.filter((f) => f.name == node)[0].index;
+            loadModalData(modal,files,thisNodeId);
+        }
+    });
 
     let footerList = modal._element.querySelector('.modal-footer');
     footerList.innerHTML = '';

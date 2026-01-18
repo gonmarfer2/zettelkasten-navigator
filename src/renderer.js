@@ -2,27 +2,29 @@ const FILES_PROPERTY = 'files';
 const GRAPH_PROPERTY = 'graph';
 showdown.setFlavor('github');
 
+function getActionButtons(fileIndex) {
+    const actionButtons = `<div class="dropdown" data-index="${fileIndex}">
+            <button class="btn btn-primary dropdown-toggle" id="id-actionButtons-${fileIndex}" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Actions
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="id-actionButtons-${fileIndex}">
+                <li><a class="dropdown-item" href="#" data-action="view"><i class="bi bi-eye-fill text-dark"></i>&nbsp;View</a></li>
+                <li><a class="dropdown-item" href="#" data-action="graph"><i class="bi bi-share-fill text-dark"></i>&nbsp;Graph connections</a></li>
+                <li><a class="dropdown-item" href="#" data-action="graph-1"><i class="bi bi-share-fill text-dark"></i>&nbsp;Direct connections</a></li>
+                <li><a class="dropdown-item" href="#" data-action="graph-tags"><i class="bi bi-share-fill text-dark"></i>&nbsp;Connections by tags</a></li>
+            </ul>
+            </div>`;
+    return actionButtons;
+}
+
 function createFileTableEntry(file) {
     let tagsHTML = '';
     file.tags.forEach(tag => {
         tagsHTML += `<span class="badge rounded-pill bg-primary">${tag}</span>`;
     });
 
-    const actionButtons = `<div class="dropdown">
-        <button class="btn btn-primary dropdown-toggle" id="id-actionButtons-${file.index}" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Actions
-        </button>
-        <ul class="dropdown-menu" aria-labelledby="id-actionButtons-${file.index}">
-            <li><a class="dropdown-item" href="#" data-action="view"><i class="bi bi-eye-fill text-dark"></i>&nbsp;View</a></li>
-            <li><a class="dropdown-item" href="#" data-action="graph"><i class="bi bi-share-fill text-dark"></i>&nbsp;Graph connections</a></li>
-            <li><a class="dropdown-item" href="#" data-action="graph-1"><i class="bi bi-share-fill text-dark"></i>&nbsp;Direct connections</a></li>
-            <li><a class="dropdown-item" href="#" data-action="graph-tags"><i class="bi bi-share-fill text-dark"></i>&nbsp;Connections by tags</a></li>
-        </ul>
-        </div>`
-    // const actionButtons = `<button class="btn btn-primary" data-action="view"><i class="bi bi-eye-fill text-light"></i></button>
-    // <button class="btn btn-primary" data-action="graph"><i class="bi bi-share-fill text-light"></i></button>`;
-
-    const entry = `<tr data-index="${file.index}">
+    const actionButtons = getActionButtons(file.index);
+    const entry = `<tr>
     <td class="align-middle">${actionButtons}</td>
     <td class="align-middle">${file.title}</td>
     <td class="align-middle">${tagsHTML}</td>
@@ -97,6 +99,11 @@ function loadModalData(modal,files,fileId) {
     const modalBody = modal._element.querySelector('.modal-body');
     modalBody.innerHTML = bodyText;
     changeFileLinksWithPageLinks(modal,files,modal);
+    const actionButtons = getActionButtons(fileId);
+    modalBody.insertAdjacentHTML('afterbegin',actionButtons);
+    modalBody.querySelectorAll('[data-action]').forEach((element) => {
+        addActionEvent(element,element.dataset.action,files,modal);
+    });
 
     const referencers = getFilesThatReference(files,thisFile);
     let footerList = modal._element.querySelector('.modal-footer');
@@ -176,8 +183,10 @@ async function loadModalGraphTags(modal,files,fileId) {
 
     graphRenderer.on("clickNode", ({node}) => {
         if (!graph.getNodeAttribute(node, "hidden")) {
-            const thisNodeId = files.filter((f) => f.name == node)[0].index;
-            loadModalData(modal,files,thisNodeId);
+            const thisNode = files.filter((f) => f.name == node);
+            if(thisNode.length > 0) {
+                loadModalData(modal,files,thisNode[0].index);
+            };
         }
     });
 
@@ -197,6 +206,44 @@ function showMessage(message,type,box) {
 
 }
 
+function addActionEvent(element,actionType,allFiles,fileModal) {
+    if (actionType == 'view') {
+        element.addEventListener('click', (e) => {
+                e.preventDefault();
+                const rowId = e.target.closest('[data-index]').dataset.index;
+                loadModalData(fileModal,allFiles,rowId);
+                fileModal.show();
+        });
+    }
+    if (actionType == 'graph') {
+        element.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const rowId = e.target.closest('[data-index]').dataset.index;
+            const graphRenderer = await loadModalGraph(fileModal,allFiles,rowId);
+            fileModal.show();
+            graphRenderer.refresh();
+        });
+    }
+    if (actionType == 'graph-1') {
+        element.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const rowId = e.target.closest('[data-index]').dataset.index;
+            const graphRenderer = await loadModalGraphLevel1(fileModal,allFiles,rowId);
+            fileModal.show();
+            graphRenderer.refresh();
+        });
+    }
+    if (actionType == 'graph-tags') {
+        element.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const rowId = e.target.closest('[data-index]').dataset.index;
+            const graphRenderer = await loadModalGraphTags(fileModal,allFiles,rowId);
+            fileModal.show();
+            graphRenderer.refresh();
+        });
+    }
+}
+
 function insertTableRows(files,allFiles,fileTable,fileModal,informationBox) {
     fileTable.innerHTML = '';
 
@@ -206,43 +253,8 @@ function insertTableRows(files,allFiles,fileTable,fileModal,informationBox) {
     }
     
     // Open file data
-    fileTable.querySelectorAll('[data-action="view"]').forEach(element => {
-        element.addEventListener('click', (e) => {
-            e.preventDefault();
-            const rowId = e.target.closest('tr').dataset.index;
-            loadModalData(fileModal,allFiles,rowId);
-            fileModal.show();
-        });
-    });
-
-    fileTable.querySelectorAll('[data-action="graph"]').forEach(element => {
-        element.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const rowId = e.target.closest('tr').dataset.index;
-            const graphRenderer = await loadModalGraph(fileModal,allFiles,rowId);
-            fileModal.show();
-            graphRenderer.refresh();
-        });
-    });
-
-    fileTable.querySelectorAll('[data-action="graph-1"]').forEach(element => {
-        element.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const rowId = e.target.closest('tr').dataset.index;
-            const graphRenderer = await loadModalGraphLevel1(fileModal,allFiles,rowId);
-            fileModal.show();
-            graphRenderer.refresh();
-        });
-    });
-
-    fileTable.querySelectorAll('[data-action="graph-tags"]').forEach(element => {
-        element.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const rowId = e.target.closest('tr').dataset.index;
-            const graphRenderer = await loadModalGraphTags(fileModal,allFiles,rowId);
-            fileModal.show();
-            graphRenderer.refresh();
-        });
+    fileTable.querySelectorAll('[data-action]').forEach(element => {
+        addActionEvent(element,element.dataset.action,allFiles,fileModal);
     });
 
     if (informationBox) {
